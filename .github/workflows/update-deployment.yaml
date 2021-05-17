@@ -3,6 +3,9 @@ on: [push]
 jobs:
   Update-Ubiops-Deployment:
     runs-on: ubuntu-latest
+    env:
+      DEPLOYMENT_DIRECTORY: deployment/
+      UBIOPS_API_TOKEN: {{ secrets.UBIOPS_API_TOKEN }}
     steps:
       - run: echo "Bundling the code in $DEPLOYMENT_DIRECTORY"
       - run: zip -r deployment.zip $DEPLOYMENT_DIRECTORY
