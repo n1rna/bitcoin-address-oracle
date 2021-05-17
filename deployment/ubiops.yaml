@@ -1,0 +1,5 @@
+apt:
+  packages:
+    - gcc
+    - python3-dev
+    - libgmp3-dev

@@ -1,0 +1,2 @@
+bitcoinlib==0.5.3
+ubiops==3.2.0
