@@ -69,7 +69,8 @@ class Deployment:
     def _update_last_used_path(self, path):
         new_value = "/".join([str(t) for t in path])
         data = ubiops.EnvironmentVariableCreate(name=self.last_used_path_index_env.name, value=new_value, secret=True)
-        self.last_used_path_index_env = self.ubiops_api.deployment_environment_variables_update(self.project_name, self.deployment_name, self.last_used_path_index_env.id, data)
+        self.ubiops_api.deployment_environment_variables_update(self.project_name, self.deployment_name, self.last_used_path_index_env.id, data)
+        self.last_used_path_index = new_value
 
     def request(self, data):
         next_path = self._get_next_unused_path()
