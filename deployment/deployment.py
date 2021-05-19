@@ -14,7 +14,7 @@ class InvalidPathProvided(Exception):
 
 class Deployment:
 
-    def __init__(self, base_directory, context):
+    def __init__(self):
 
         self.project_name = os.environ.get('PROJECT_NAME')
         self.deployment_name = os.environ.get('DEPLOYMENT_NAME')
@@ -46,7 +46,7 @@ class Deployment:
         for env in environment_variables:
             if env.name == 'LAST_USED_PATH_INDEX':
                 self.last_used_path_index_env = env
-    
+
         print("Wallet initialized successfuly.")
 
     def _get_next_unused_path(self):
@@ -61,7 +61,7 @@ class Deployment:
         return path_tokens
 
     def _get_address_for_path(self, path):
-        return self.wallet.get_key_for_path(path).address
+        return self.wallet.key_for_path(path).address
 
     def _get_invoice(self, address, amount):
         return "{}?amount={}".format(address.upper(), amount)
