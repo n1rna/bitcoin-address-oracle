@@ -66,8 +66,8 @@ class Deployment:
     def _get_invoice(self, address, amount):
         return "{}?amount={}".format(address.upper(), amount)
 
-    def _update_last_used_path(path):
-        data = ubiops.EnvironmentVariableCreate(value=path)
+    def _update_last_used_path(self, path):
+        data = ubiops.EnvironmentVariableCreate(value="/".join(path))
         self.last_used_path_index_env = self.ubiops_api.deployment_environment_variables_update(self.project_name, self.deployment_name, self.last_used_path_index_env.id, data)
 
     def request(self, data):
