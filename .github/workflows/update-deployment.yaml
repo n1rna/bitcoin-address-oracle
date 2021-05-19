@@ -5,13 +5,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       env:
-        DEPLOYMENT_DIRECTORY: deployment
-        UBIOPS_API_TOKEN: {{ secrets.UBIOPS_API_TOKEN }}
-        DEPLOYMENT_NAME: nima-donation
-        DEPLOYMENT_VERSION: v1
+        DEPLOYMENT_DIRECTORY: ${{ secrets.DEPLOYMENT_DIRECTORY }}
+        UBIOPS_API_TOKEN: ${{ secrets.UBIOPS_API_TOKEN }}
+        DEPLOYMENT_NAME: ${{ secrets.DEPLOYMENT_NAME }}
+        DEPLOYMENT_VERSION: ${{ secrets.DEPLOYMENT_VERSION }}
       - uses: actions/checkout@v2
       - run: echo "Bundling the code in $DEPLOYMENT_DIRECTORY"
       - run: zip -r deployment.zip $DEPLOYMENT_DIRECTORY
       - run: pip install ubiops-cli
-      - run: ubiops signin --token -p $UBIOPS_API_TOKEN
+      - run: ubiops signin --token -p "$UBIOPS_API_TOKEN"
       - run: ubiops version_revisions upload -z deployment.zip -d $DEPLOYMENT_NAME -v $DEPLOYMENT_VERSION
