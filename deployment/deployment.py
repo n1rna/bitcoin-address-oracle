@@ -14,7 +14,7 @@ class InvalidPathProvided(Exception):
 
 class Deployment:
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
 
         self.project_name = os.environ.get('PROJECT_NAME')
         self.deployment_name = os.environ.get('DEPLOYMENT_NAME')
