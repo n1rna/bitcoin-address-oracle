@@ -16,33 +16,33 @@ class Deployment:
 
     def __init__(self, base_directory, context):
 
-        self.project_name = context['environment_variables'].get('PROJECT_NAME')
-        self.deployment_name = context['environment_variables'].get('DEPLOYMENT_NAME')
+        self.project_name = os.environ.get('PROJECT_NAME')
+        self.deployment_name = os.environ.get('DEPLOYMENT_NAME')
 
         # Initialize bitcoin wallet
-        passphrase = context['environment_variables'].get('MNEMONIC_PASSPHRASE', None)
+        passphrase = os.environ.get('MNEMONIC_PASSPHRASE', None)
         if passphrase is None:
             raise NoPrivateKeyFound
         try:
-            print(passphrase, context['environment_variables'])
+            print(passphrase, os.environ)
             self.wallet = Wallet.create("Wallet", keys=passphrase, network='bitcoin', witness_type='segwit')
         except Exception as e:
             raise e
 
         # Initialize Ubiops Client
-        ubiops_api_token = context['environment_variables'].get('UBIOPS_API_TOKEN', None)
+        ubiops_api_token = os.environ.get('UBIOPS_API_TOKEN', None)
         # internal_ubiops_api_host = os.environ.get('INT_API_URL')
 
         ubiops_conf = ubiops.Configuration(
             # host=internal_ubiops_api_host,
             api_key={'Authorization': 'Token {}'.format(ubiops_api_token)},
         )
-        client = ubiops.ApiClient(configuration)
+        client = ubiops.ApiClient(ubiops_conf)
         self.ubiops_api = ubiops.api.CoreApi(client)
 
         environment_variables = self.ubiops_api.deployment_environment_variables_list(self.project_name, self.deployment_name)
 
-        self.last_used_path_index = context['environment_variables'].get('LAST_USED_PATH_INDEX', '0/0')
+        self.last_used_path_index = os.environ.get('LAST_USED_PATH_INDEX', '0/0')
         self.last_used_path_index_env = None
         for env in environment_variables:
             if env.name == 'LAST_USED_PATH_INDEX':
