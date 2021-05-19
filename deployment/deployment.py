@@ -24,7 +24,6 @@ class Deployment:
         if passphrase is None:
             raise NoPrivateKeyFound
         try:
-            print(passphrase, os.environ)
             self.wallet = Wallet.create("Wallet", keys=passphrase, network='bitcoin', witness_type='segwit')
         except Exception as e:
             raise e
@@ -53,7 +52,7 @@ class Deployment:
     def _get_next_unused_path(self):
         MAX_INDEX = 1000
 
-        path_tokens = self.last_used_path_index.split("/")
+        path_tokens = [int(t) for t in self.last_used_path_index.split("/")]
         if len(path_tokens) != 2:
             raise InvalidPathProvided
 
