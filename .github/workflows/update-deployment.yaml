@@ -1,11 +1,17 @@
-name: Ubiops - Update Deployment
-on: [push]
+name: Integrate and Deploy
+on:
+  push:
+    branches:
+      - master
 jobs:
-  Update-Ubiops-Deployment:
+  Integrate-and-Deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - shell: bash
+        with:
+          fetch-depth: 0
+      - name: Ubiops - Update Deployment
+        shell: bash
         env:
           DEPLOYMENT_DIRECTORY: ${{ secrets.DEPLOYMENT_DIRECTORY }}
           UBIOPS_API_TOKEN: ${{ secrets.UBIOPS_API_TOKEN }}
@@ -14,7 +20,7 @@ jobs:
         run: |
           update_deployment () {
             echo "Bundling the code in $DEPLOYMENT_DIRECTORY"
-            zip -r deployment.zip $DEPLOYMENT_DIRECTORY
+            zip -r deployment.zip $DEPLOYMENT_DIRECTORY &&
             pip install ubiops-cli
             ubiops signin --token -p "$UBIOPS_API_TOKEN"
             ubiops version_revisions upload -z deployment.zip -d $DEPLOYMENT_NAME -v $DEPLOYMENT_VERSION
@@ -24,7 +30,7 @@ jobs:
             echo "Detected changes in deployment ..."
             update_deployment
           fi
-      - name: deploy
+      - name: Deploy to Github Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
