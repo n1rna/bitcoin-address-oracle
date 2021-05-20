@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html class="theme-8bit-yellow">
+<head>
+  <title>n1rna - btc address orcale</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A Bitcoin address generator oracle powered by UbiOps">
+
+  <script>
+    ubiops_api_token = 'cc2e91f3dfd41fa55ce3a176ffd0fe70419e9ae4';
+    deployment_endpoint = 'https://api.ubiops.com/v2.1/projects/nima-donation/deployments/btc-donation/versions/v1'
+
+    async function makeUbiopsRequest(url = '', data = {}) {
+        const response = await fetch(deployment_endpoint + url, {
+            method: 'POST',
+            cache: 'no-cache',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Token ' + ubiops_api_token
+            },
+            referrerPolicy: 'no-referrer',
+            body: JSON.stringify(data)
+        });
+        return response.json();
+    }
+    function fetchInvoice() {
+        var amount = document.getElementById("sats").value;
+        makeUbiopsRequest('/request', {sats: amount})
+            .then(resp => {
+                var qrcode = new QRCode(document.getElementById("invoice-qr"), {
+                  text: resp.invoice,
+                  width: 128,
+                  height: 128,
+                  colorDark : "#000000",
+                  colorLight : "#ffffff",
+                  correctLevel : QRCode.CorrectLevel.H
+                });
+                document.getElementById("address-value").innerText = resp.address;
+                document.getElementById("address-amount").innerText = resp.amout;
+            })
+    }
+  </script>
+
+  <!-- 8.bit CSS - begin -->
+  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,300;0,600;1,300;1,600&display=swap" rel="stylesheet">
+  <link id="css-8bit-style" rel="stylesheet" href="8.bit.css">
+  <style>
+    :root {
+      --font-family: 'Source Code Pro', monospace;
+    }
+  </style>
+  <!-- 8.bit CSS - end -->
+</head>
+<body>
+  <header>
+    <strong>n1rna</strong>
+  </header>
+  <aside>Experimental Bitcoin payment page</aside>
+  <main>
+    <h1>Bitcoin Donation</h1>
+
+    <p>
+      <mark>This</mark> is an experiment with <a href="https://ubiops.com">UbiOps</a> platform for generating new bitcoin address on-demand.
+      You can find the code <a href="">here</a> - hosted on Github.
+    </p>
+
+    <hr />
+
+    <p>Please enter the amount (satoshis) for your invoice.</p>
+
+    <label for="sats">Amount</label>
+    <input id="sats" placeholder="Satoshis" />
+    <button type="submit" onClick="fetchInvoice()">Submit</button>
+
+    <p><div id="invoice-qr"></div></p>
+    <p><strong>Address</strong><cite id="address-value"></cite></p>
+    <p><strong>Amount</strong><cite id="amonut-value"></cite></p>
+    <div id="invoice-qr"></div>
+
+    <hr />
+    
+    <h5>What is UbiOps?</h5>
+    <blockquote>
+      Run your data science code live in the cloud so you can use it from anywhere at any time.
+    </blockquote>
+    <p>
+      With UbiOps you can do exactly that, in a matter of minutes. Serve simple data processing functions as well as complex machine learning deployments. With support for both Python and R.
+    </p>
+    <hr />
+    <h5>About the experiment</h5>
+    <p>blablabla</p>
+    <p>blablabla</p>
+    <p>blablabla</p>
+    <p>blablabla</p>
+  </main>
+  <footer>
+    Powered by <a href="https://ubiops.com">UbiOps</a> | Hosted on <a href="https://github.com">Github</a> | Theme by <a href="">8.bit.css</a> 
+  </footer>
+</body>
+</html>
