@@ -6,8 +6,8 @@
   <meta name="description" content="A Bitcoin address generator oracle powered by UbiOps">
 
   <script>
-    ubiops_api_token = 'eef4143b2f67c0a8fd2328d136c5e5e01c1200ca';
-    deployment_endpoint = 'https://api.ubiops.com/v2.1/projects/nima-donation/deployments/btc-donation/versions/v1'
+    ubiops_api_token = '473686a2b875998483ec353cc5d0e3e48de1b25f';
+    deployment_endpoint = 'https://api.staging.ubiops.com/v2.1/projects/elif-test/deployments/input-size-output/versions/v1'
 
     async function makeUbiopsRequest(url = '', data = {}) {
         const response = await fetch(deployment_endpoint + url, {
@@ -16,7 +16,7 @@
             mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Token ' + ubiops_api_token
+                'Authorization': 'Token ' + ubiops_api_token,
             },
             referrerPolicy: 'no-referrer',
             body: JSON.stringify(data)
@@ -25,19 +25,22 @@
     }
     function fetchInvoice() {
         var amount = document.getElementById("sats").value;
-        makeUbiopsRequest('/request', {sats: amount})
-            .then(resp => {
-                var qrcode = new QRCode(document.getElementById("invoice-qr"), {
-                  text: resp.invoice,
-                  width: 128,
-                  height: 128,
-                  colorDark : "#000000",
-                  colorLight : "#ffffff",
-                  correctLevel : QRCode.CorrectLevel.H
-                });
-                document.getElementById("address-value").innerText = resp.address;
-                document.getElementById("address-amount").innerText = resp.amout;
-            })
+        makeUbiopsRequest('/request', {
+          sats: amount,
+        })
+          .then(resp => {
+            console.log("hihi", resp)
+              // var qrcode = new QRCode(document.getElementById("invoice-qr"), {
+              //   text: resp.invoice,
+              //   width: 128,
+              //   height: 128,
+              //   colorDark : "#000000",
+              //   colorLight : "#ffffff",
+              //   correctLevel : QRCode.CorrectLevel.H
+              // });
+              // document.getElementById("address-value").innerText = resp.address;
+              // document.getElementById("address-amount").innerText = resp.amout;
+          })
     }
   </script>
 
@@ -53,15 +56,15 @@
 </head>
 <body>
   <header>
-    <strong>n1rna</strong>
+    <strong>n1rna.github.io/bitcoin-address-oracle</strong>
   </header>
   <aside>Experimental Bitcoin payment page</aside>
   <main>
-    <h1>Bitcoin Donation</h1>
+    <h1>Bitcoin Address Oracle</h1>
 
     <p>
-      <mark>This</mark> is an experiment with <a href="https://ubiops.com">UbiOps</a> platform for generating new bitcoin address on-demand.
-      You can find the code <a href="">here</a> - hosted on Github.
+      <mark>This</mark> is an experiment with <a href="https://ubiops.com">UbiOps</a> platform for generating new bitcoin addresses on-demand.
+      You can find the code <a href="https://github.com/n1rna/bitcoin-address-oracle">here</a> - hosted on Github.
     </p>
 
     <hr />
@@ -73,9 +76,8 @@
     <button type="submit" onClick="fetchInvoice()">Submit</button>
 
     <p><div id="invoice-qr"></div></p>
-    <p><strong>Address</strong><cite id="address-value"></cite></p>
-    <p><strong>Amount</strong><cite id="amonut-value"></cite></p>
-    <div id="invoice-qr"></div>
+    <p id="invoice-address" style="display: none;"><strong>Address</strong><cite id="address-value"></cite></p>
+    <p id="invoice-amount" style="display: none;"><strong>Amount</strong><cite id="amonut-value"></cite></p>
 
     <hr />
     
@@ -87,11 +89,251 @@
       With UbiOps you can do exactly that, in a matter of minutes. Serve simple data processing functions as well as complex machine learning deployments. With support for both Python and R.
     </p>
     <hr />
-    <h5>About the experiment</h5>
-    <p>blablabla</p>
-    <p>blablabla</p>
-    <p>blablabla</p>
-    <p>blablabla</p>
+    <h5>The Bitcoin Address Oracle Experiment</h5>
+
+<p>This tool lets you generate new bitcoin addresses based on the HD-Wallet (<a href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki">BIP-32</a>) scheme to improve your privacy when accepting Bitcoin payments - whether for donations or selling any products in exchange for Bitcoin. 
+We will generate a new address upon every new request, regardless of the fact that there are any funds moved to the previous address or not. Because one might ask for a new address and keep monitoring that address for any incoming transactions and that way they will be able to find the transaction associated with one of the donations.</p>
+<p>Based on the <a href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#public-parent-key--public-child-key">&quot;Public parent key → public child key&quot;</a> scheme, you don&#39;t actually need the Private Key to derive new child addresses. Only thing you need, is a non-hardened extended public key to derive new child public keys and eventually new addresses.</p>
+<p>In the current implementation, the tool will iterate a specific range of valid derivation paths. You can configure the beginning of this range in the tool, therefore no bad actors will be able to iterate the whole derivation path to find your addresses - becuase they won&#39;t know where to start the iteration.</p>
+<h2 id="where-to-host-the-code-">Where to host the code?</h2>
+<p>Well, since this is not a static-page, and you would still need to hide some secret information, the tool cannot run as a simple Javascript snippet on the visitor&#39;s browser and you will always need another machine to run your code to generate a new address. Following information should always be kept secret and not exposed to the visitors:</p>
+<ul>
+<li>Your Extended Public Key</li>
+<li>First Derivation path</li>
+<li>Current iteration of derivation paths</li>
+</ul>
+<p>Now, of course you have many options to host this little python script. Your Raspberry Pi sitting in the corner of your room? Yup! that&#39;s the best option to be honest! You can run it on whatever server you are comfortable with! But you can also use <a href="https://ubiops.com">UbiOps</a> to host your code which is more cost-efficient! UbiOps deployments are very similar to <a href="https://aws.amazon.com/lambda/">AWS Lambda</a> or <a href="https://cloud.google.com/functions">Google Cloud Functions</a> in their nature. You can run your deployments on-demand and they will shutdown if there are no incoming requests, to save money!</p>
+<p>If you take a look at the <a href="https://ubiops.com/docs/">UbiOps documentations</a> you can see that there are more features than just on-demand serverless computation available for you. </p>
+<p>In other words, you can consider UbiOps as:</p>
+<blockquote>
+<p>&quot;Lambda funcitons, on steroids!&quot; — Ricardo</p>
+</blockquote>
+<p>Also UbiOps has a nice free-tier where you get 100 Gigabyte Hours free computation time every month, which should be enough for a simple deployment like ours. So, let&#39;s dive into our implementation of this tool and deploying it on UbiOps using a free-tier account.</p>
+<h2 id="getting-hands-on">Getting Hands-on</h2>
+<p>First thing we need to do, is of course creating a new account on UbiOps. When you create your account for the first time, you will be prompted to create a new organization and a new project.</p>
+<p>You can find the documentation for UbiOps deployments structure <a href="https://ubiops.com/docs/deployments/deployment-package/deployment-structure.html">here</a>.</p>
+<p>We are going to utilize the <a href="https://pypi.org/project/bitcoinlib/"><code>bitcoinlib</code></a> python package to do the following operations:</p>
+<ul>
+<li>Generate a new private, public key pair (Or you can use your existing private key! Your choice)</li>
+<li>Load a watch-only wallet using the public key</li>
+<li>Generate new addresses based on a derivation path</li>
+</ul>
+<p>For the purpose of this project, we are going to create a new private/public key pair and use the generate public key. But as mentioned before, you can indeed use your own public key if you already have one.</p>
+<p>Run the following snippet somewhere safe and make sure you store your seed phrase (Mnemonic) securely. If you lose this, you will not be able to access your funds ever - Also anyone else who possesses this key will be able to access your funds without your permission.</p>
+<pre><code class="lang-python"><span class="hljs-keyword">from</span> bitcoinlib.mnemonic <span class="hljs-keyword">import</span> Mnemonic
+
+<span class="hljs-comment"># Generate a new BIP-39 compatible Mnemonic seed phrase</span>
+passphrase = Mnemonic().generate()
+
+<span class="hljs-comment"># Print the seed phrase and make sure you store it safely</span>
+<span class="hljs-built_in">print</span>(passphrase)
+
+wallet = Wallet.create(<span class="hljs-string">"Wallet"</span>, keys=passphrase, network=<span class="hljs-string">'bitcoin'</span>, witness_type=<span class="hljs-string">'segwit'</span>)
+
+<span class="hljs-comment"># Print wallet's xpub key in WIF format</span>
+<span class="hljs-built_in">print</span>(wallet.public_master().wif)
+</code></pre>
+<p>Now let&#39;s start creating our UbiOps deployment.</p>
+<pre><code class="lang-python"><span class="hljs-keyword">from</span> bitcoinlib.wallets <span class="hljs-keyword">import</span> Wallet
+
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">NoXPUBFound</span><span class="hljs-params">(Exception)</span>:</span>
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Deployment</span>:</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, *args, **kwargs)</span>:</span>
+        <span class="hljs-comment"># Initialize bitcoin wallet</span>
+        xpub_wif = os.environ.get(<span class="hljs-string">'HDKEY_XPUB_WIF'</span>, <span class="hljs-keyword">None</span>)
+        <span class="hljs-keyword">if</span> xpub_wif <span class="hljs-keyword">is</span> <span class="hljs-keyword">None</span>:
+            <span class="hljs-keyword">raise</span> NoXPUBFound
+        <span class="hljs-keyword">try</span>:
+            xpub = HDKey(xpub_wif)
+            self.wallet = Wallet.create(<span class="hljs-string">"Wallet"</span>, keys=xpub, network=<span class="hljs-string">'bitcoin'</span>, witness_type=<span class="hljs-string">'segwit'</span>)
+        <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+            <span class="hljs-keyword">raise</span> e
+
+        self.last_used_path_index = <span class="hljs-string">'0/0'</span>
+
+        print(<span class="hljs-string">"Wallet initialized successfuly."</span>)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">_get_address_for_path</span><span class="hljs-params">(self, path)</span>:</span>
+        <span class="hljs-keyword">return</span> self.wallet.key_for_path(path).address
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">request</span><span class="hljs-params">(self, data)</span>:</span>    
+        new_address = self._get_address_for_path(self.last_used_path_index)
+
+        <span class="hljs-keyword">return</span> {
+            <span class="hljs-string">"address"</span>: new_address,
+        }
+</code></pre>
+<p>As you can see, we are reading the <code>HDKEY_XPUB_WIF</code> from the deployment&#39;s environment variables. You can find the docs on the environment variables functionality <a href="https://ubiops.com/docs/environment-variables.html">here</a>. This is where you will store your xpub that you generated in the previous step.</p>
+<p>The interesting part is the <code>_get_address_for_path</code> method. As you can see, currently we are passing the <code>last_used_path_index</code> to that method which will give us the corresponding _p2sh<em>segwit</em> address to that path. But right now, we are not iterating that path at all. So no matter how many times this deployment is called, it will return the same address. There is a catch here, we need to somehow store the <em>last used path</em> as a global variable and increment it after every request. Even if the deployment goes down due to inactivity, we would need the deployment to start with the updated <em>last used path</em> in memory. </p>
+<p>Currently, UbiOps does not provide any kind of permanent storage to store these kinds of variables. But don&#39;t worry at all! We still have the good old Environment Variables for this purpose. We can update the environment variables inside the deployment itself and since these values are permanently stored on UbiOps database, we can somehow abuse (shush!!!) them to our benefit.</p>
+<pre><code class="lang-python">import os
+
+from bitcoinlib.wallets import Wallet
+import ubiops
+
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">NoXPUBFound</span>(<span class="hljs-title">Exception</span>):</span>
+    pass
+
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">InvalidPathProvided</span>(<span class="hljs-title">Exception</span>):</span>
+    pass
+
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Deployment</span>:</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(<span class="hljs-keyword">self</span>, *args, **kwargs)</span></span>:
+
+        <span class="hljs-keyword">self</span>.project_name = os.environ.get(<span class="hljs-string">'PROJECT_NAME'</span>)
+        <span class="hljs-keyword">self</span>.deployment_name = os.environ.get(<span class="hljs-string">'DEPLOYMENT_NAME'</span>)
+
+        <span class="hljs-comment"># Initialize bitcoin wallet</span>
+        xpub_wif = os.environ.get(<span class="hljs-string">'HDKEY_XPUB_WIF'</span>, None)
+        <span class="hljs-keyword">if</span> xpub_wif is <span class="hljs-symbol">None:</span>
+            raise NoXPUBFound
+        <span class="hljs-symbol">try:</span>
+            <span class="hljs-keyword">self</span>.wallet = Wallet.create(<span class="hljs-string">"Wallet"</span>, keys=passphrase, network=<span class="hljs-string">'bitcoin'</span>, witness_type=<span class="hljs-string">'segwit'</span>)
+        except Exception as <span class="hljs-symbol">e:</span>
+            raise e
+
+        <span class="hljs-comment"># Initialize Ubiops Client</span>
+        ubiops_api_token = os.environ.get(<span class="hljs-string">'UBIOPS_API_TOKEN'</span>, None)
+        internal_ubiops_api_host = os.environ.get(<span class="hljs-string">'INT_API_URL'</span>)
+
+        ubiops_conf = ubiops.Configuration(
+            host=internal_ubiops_api_host,
+            api_key={<span class="hljs-string">'Authorization'</span>: <span class="hljs-string">'Token {}'</span>.format(ubiops_api_token)},
+        )
+        client = ubiops.ApiClient(ubiops_conf)
+        <span class="hljs-keyword">self</span>.ubiops_api = ubiops.api.CoreApi(client)
+
+        environment_variables = <span class="hljs-keyword">self</span>.ubiops_api.deployment_environment_variables_list(<span class="hljs-keyword">self</span>.project_name, <span class="hljs-keyword">self</span>.deployment_name)
+
+        <span class="hljs-keyword">self</span>.last_used_path_index = os.environ.get(<span class="hljs-string">'LAST_USED_PATH_INDEX'</span>, <span class="hljs-string">'0/0'</span>)
+        <span class="hljs-keyword">self</span>.last_used_path_index_env = None
+        <span class="hljs-keyword">for</span> env <span class="hljs-keyword">in</span> <span class="hljs-symbol">environment_variables:</span>
+            <span class="hljs-keyword">if</span> env.name == <span class="hljs-string">'LAST_USED_PATH_INDEX'</span>:
+                <span class="hljs-keyword">self</span>.last_used_path_index_env = env
+
+        print(<span class="hljs-string">"Wallet initialized successfuly."</span>)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">_get_next_unused_path</span><span class="hljs-params">(<span class="hljs-keyword">self</span>)</span></span>:
+        MAX_INDEX = <span class="hljs-number">1000</span>
+
+        path_tokens = [int(t) <span class="hljs-keyword">for</span> t <span class="hljs-keyword">in</span> <span class="hljs-keyword">self</span>.last_used_path_index.split(<span class="hljs-string">"/"</span>)]
+        <span class="hljs-keyword">if</span> len(path_tokens) != <span class="hljs-number">2</span>:
+            raise InvalidPathProvided
+
+        path_tokens[<span class="hljs-number">1</span>] = min(MAX_INDEX, path_tokens[<span class="hljs-number">1</span>] + <span class="hljs-number">1</span>)
+
+        <span class="hljs-keyword">return</span> path_tokens
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">_get_address_for_path</span><span class="hljs-params">(<span class="hljs-keyword">self</span>, path)</span></span>:
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">self</span>.wallet.key_for_path(path).address
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">_update_last_used_path</span><span class="hljs-params">(<span class="hljs-keyword">self</span>, path)</span></span>:
+        new_value = <span class="hljs-string">"/"</span>.join([str(t) <span class="hljs-keyword">for</span> t <span class="hljs-keyword">in</span> path])
+        data = ubiops.EnvironmentVariableCreate(name=<span class="hljs-keyword">self</span>.last_used_path_index_env.name, value=new_value, secret=True)
+        <span class="hljs-keyword">self</span>.ubiops_api.deployment_environment_variables_update(<span class="hljs-keyword">self</span>.project_name, <span class="hljs-keyword">self</span>.deployment_name, <span class="hljs-keyword">self</span>.last_used_path_index_env.id, data)
+        <span class="hljs-keyword">self</span>.last_used_path_index = new_value
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">request</span><span class="hljs-params">(<span class="hljs-keyword">self</span>, data)</span></span>:
+        next_path = <span class="hljs-keyword">self</span>._get_next_unused_path()
+        new_address = <span class="hljs-keyword">self</span>._get_address_for_path(next_path)
+        <span class="hljs-keyword">self</span>._update_last_used_path(next_path)
+
+        <span class="hljs-keyword">return</span> {
+            <span class="hljs-string">"address"</span>: new_address,
+        }
+</code></pre>
+<p><center><img src="assets/whiteguyblink.jpg" width="800px" alt="Wait a minute!"></center></p>
+<p>WOW, wait a minute! What happened?</p>
+<p>So, I just added some logic to read the <code>last_used_path_index</code> environment variable from UbiOps API directly instead of relying on the value passed in the deployment context. And also added the <code>_update_lsat_used_path</code> method to update the this environment variable&#39;s value after every request. Nothing special :joy:</p>
+<p>The interesting part here is how I&#39;m using UbiOps&#39; client library inside the UbiOps deployment and you can see how you can use the internal API url to improve the performance and avoid public dns resolves, since the deployment will always run inside UbiOps cluster and therefore it&#39;s only natural to use the internal API url.</p>
+<p>Also not that we would need to define the <code>UBIOPS_API_TOKEN</code> environment variable and use a Service User Token with sufficient permissions and roles to be able to retrieve/update environment variables, like we do here. Check out the documentation on permissions and service users <a href="https://ubiops.com/docs/organizations/service-users.html">here</a>.</p>
+<p>Okay, we are almost done! Just one little thing to add to our deployment. The good old invoice url. Many wallets support this invoice format and we can actually create a nice QR code from this invoice url and show to our visitors.</p>
+<p>We will ask our users to indicate how many <code>satoshis</code> they want to donate, so we can create a nice invoice for them and they can pay the invoice just by scanning the QRC code.</p>
+<pre><code class="lang-python"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Deployment</span>:</span>
+    ...
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">_get_invoice</span><span class="hljs-params">(<span class="hljs-keyword">self</span>, address, amount)</span></span>:
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"{}?amount={}"</span>.format(address.upper(), amount)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">request</span><span class="hljs-params">(<span class="hljs-keyword">self</span>, data)</span></span>:
+        next_path = <span class="hljs-keyword">self</span>._get_next_unused_path()
+
+        new_address = <span class="hljs-keyword">self</span>._get_address_for_path(next_path)
+        amount_in_sats = data.get(<span class="hljs-string">"sats"</span>, <span class="hljs-number">1000</span>)
+        invoice = <span class="hljs-keyword">self</span>._get_invoice(new_address, amount_in_sats)
+
+        <span class="hljs-keyword">self</span>._update_last_used_path(next_path)
+
+        <span class="hljs-keyword">return</span> {
+            <span class="hljs-string">"address"</span>: new_address,
+            <span class="hljs-string">"amount"</span>: amount_in_sats,
+            <span class="hljs-string">"invoice"</span>: invoice
+        }
+</code></pre>
+<h3 id="dependencies">Dependencies</h3>
+<p>UbiOps lets you specify both <a href="https://ubiops.com/docs/deployments/deployment-package/python-deployment-package.html">python requirements</a> and <a href="https://ubiops.com/docs/deployments/deployment-package/ubiops-yaml.html">os-level packages</a> that are required for your deployment to work properly. Here&#39;s the <code>requirements.txt</code> and <code>ubiops.yaml</code> files used for this deployment:</p>
+<pre><code><span class="hljs-comment"># requirements.txt</span>
+<span class="hljs-attr">bitcoinlib</span>==<span class="hljs-number">0.5</span>.<span class="hljs-number">3</span>
+<span class="hljs-attr">ubiops</span>==<span class="hljs-number">3.2</span>.<span class="hljs-number">0</span>
+</code></pre><pre><code># ubiops.yaml
+apt:
+  packages:
+    -<span class="ruby"> gcc
+</span>    -<span class="ruby"> python3-dev
+</span>    -<span class="ruby"> libgmp3-dev</span>
+</code></pre><p>That&#39;s it! We are done with our UbiOps deployment. Now you can go on and create a deployment and deployment version on your UbiOps project and deploy your Bitcoin Address Oracle script.</p>
+<h2 id="automate-your-deployment-using-github-actions-bonus-">Automate your deployment using Github Actions (Bonus)</h2>
+<p>If you are a lazy developer like I am, you would really like to automate the process of updating your deployment on UbiOps. Also, who doesn&#39;t like tracking changes using git?? So, I created this simple github action to automate updating my deployment on UbiOps, on every commit that I push to the repository. You can find more about Github Actions on their <a href="https://docs.github.com/en/actions">documentation page</a>.</p>
+<pre><code class="lang-yaml">name: Integrate and Deploy
+on:
+  push:
+    branches:
+      - master
+<span class="hljs-built_in">jobs</span>:
+  Integrate-and-Deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Ubiops - Update Deployment
+        shell: bash
+        env:
+          DEPLOYMENT_DIRECTORY: <span class="hljs-variable">${{ secrets.DEPLOYMENT_DIRECTORY }</span>}
+          UBIOPS_API_TOKEN: <span class="hljs-variable">${{ secrets.UBIOPS_API_TOKEN }</span>}
+          DEPLOYMENT_NAME: <span class="hljs-variable">${{ secrets.DEPLOYMENT_NAME }</span>}
+          DEPLOYMENT_VERSION: <span class="hljs-variable">${{ secrets.DEPLOYMENT_VERSION }</span>}
+        run: |
+          <span class="hljs-function"><span class="hljs-title">update_deployment</span></span> () {
+            <span class="hljs-built_in">echo</span> <span class="hljs-string">"Bundling the code in <span class="hljs-variable">$DEPLOYMENT_DIRECTORY</span>"</span>
+            zip -r deployment.zip <span class="hljs-variable">$DEPLOYMENT_DIRECTORY</span>
+            pip install ubiops-cli
+            ubiops signin --token -p <span class="hljs-string">"<span class="hljs-variable">$UBIOPS_API_TOKEN</span>"</span>
+            ubiops version_revisions upload -z deployment.zip <span class="hljs-_">-d</span> <span class="hljs-variable">$DEPLOYMENT_NAME</span> -v <span class="hljs-variable">$DEPLOYMENT_VERSION</span>
+          }
+          git diff --name-only --diff-filter=ADMR @~..@ | grep -q <span class="hljs-variable">$DEPLOYMENT_DIRECTORY</span>
+          <span class="hljs-keyword">if</span> [ $? <span class="hljs-_">-ne</span> 0 ]; <span class="hljs-keyword">then</span>
+            <span class="hljs-built_in">echo</span> <span class="hljs-string">"Detected changes in deployment ..."</span>
+            update_deployment
+          <span class="hljs-keyword">fi</span>
+</code></pre>
+<p>Just put this yaml file in your <code>.github/workflows</code> directory inside your repository and VOILA! Don&#39;t forget to define the following secrets on your github repository:</p>
+<ul>
+<li>UBIOPS_API_TOKEN (a service user token with sufficient roles/permissions to update deployments)</li>
+<li>DEPLOYMENT_DIRECTORY (directory which you store your deployment related code)</li>
+<li>DEPLOYMENT_NAME</li>
+<li>DEPLOYMENT_VERSION</li>
+</ul>
+<p>You can find the full implementation of this deployment <a href="https://github.com/n1rna/bitcoin-address-oracle">on github</a>.</p>
+
   </main>
   <footer>
     Powered by <a href="https://ubiops.com">UbiOps</a> | Hosted on <a href="https://github.com">Github</a> | Theme by <a href="">8.bit.css</a> 

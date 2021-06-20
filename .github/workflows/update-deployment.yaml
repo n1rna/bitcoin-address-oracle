@@ -20,7 +20,7 @@ jobs:
         run: |
           update_deployment () {
             echo "Bundling the code in $DEPLOYMENT_DIRECTORY"
-            zip -r deployment.zip $DEPLOYMENT_DIRECTORY &&
+            zip -r deployment.zip $DEPLOYMENT_DIRECTORY
             pip install ubiops-cli
             ubiops signin --token -p "$UBIOPS_API_TOKEN"
             ubiops version_revisions upload -z deployment.zip -d $DEPLOYMENT_NAME -v $DEPLOYMENT_VERSION

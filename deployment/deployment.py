@@ -1,10 +1,11 @@
 import os
 
 from bitcoinlib.wallets import Wallet
+from bitcoinlib.keys import HDKey
 import ubiops
 
 
-class NoPrivateKeyFound(Exception):
+class NoXPUBFoud(Exception):
     pass
 
 
@@ -20,20 +21,21 @@ class Deployment:
         self.deployment_name = os.environ.get('DEPLOYMENT_NAME')
 
         # Initialize bitcoin wallet
-        passphrase = os.environ.get('MNEMONIC_PASSPHRASE', None)
-        if passphrase is None:
-            raise NoPrivateKeyFound
+        xpub_wif = os.environ.get('HDKEY_XPUB_WIF', None)
+        if xpub_wif is None:
+            raise NoXPUBFoud
         try:
-            self.wallet = Wallet.create("Wallet", keys=passphrase, network='bitcoin', witness_type='segwit')
+            xpub = HDKey(xpub_wif)
+            self.wallet = Wallet.create("Wallet", keys=xpub, network='bitcoin', witness_type='segwit')
         except Exception as e:
             raise e
 
         # Initialize Ubiops Client
         ubiops_api_token = os.environ.get('UBIOPS_API_TOKEN', None)
-        # internal_ubiops_api_host = os.environ.get('INT_API_URL')
+        internal_ubiops_api_host = os.environ.get('INT_API_URL')
 
         ubiops_conf = ubiops.Configuration(
-            # host=internal_ubiops_api_host,
+            host=internal_ubiops_api_host,
             api_key={'Authorization': 'Token {}'.format(ubiops_api_token)},
         )
         client = ubiops.ApiClient(ubiops_conf)
