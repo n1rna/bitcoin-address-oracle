@@ -25,11 +25,11 @@ jobs:
             ubiops signin --token -p "$UBIOPS_API_TOKEN"
             ubiops version_revisions upload -z deployment.zip -d $DEPLOYMENT_NAME -v $DEPLOYMENT_VERSION
           }
-          git diff --name-only --diff-filter=ADMR @~..@ | grep -q $DEPLOYMENT_DIRECTORY
-          if [ $? -ne 0 ]; then
-            echo "Detected changes in deployment ..."
-            update_deployment
-          fi
+          update_deployment
+          # git diff --name-only --diff-filter=ADMR @~..@ | grep -q $DEPLOYMENT_DIRECTORY
+          # if [ $? -ne 0 ]; then
+          #   echo "Detected changes in deployment ..."
+          # fi
       - name: Deploy to Github Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
