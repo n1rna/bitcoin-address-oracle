@@ -80,6 +80,7 @@ class Deployment:
         new_address = self._get_address_for_path(next_path)
         amount_in_sats = data.get("sats", 1000)
         invoice = self._get_invoice(new_address, amount_in_sats)
+
         self._update_last_used_path(next_path)
 
         return {
