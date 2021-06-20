@@ -42,7 +42,7 @@
             document.getElementById("invoice-amount").style.display = '';
 
             document.getElementById("address-value").innerText = response.result.address;
-            document.getElementById("address-amount").innerText = response.result.amout;
+            document.getElementById("address-amount").innerText = response.result.amount + " satoshis";
           })
     }
   </script>
@@ -78,11 +78,9 @@
     <input id="sats" placeholder="Satoshis" />
     <button type="submit" onClick="fetchInvoice()">Submit</button>
 
-    <center>
-      <p><div id="invoice-qr"></div></p>
-      <p id="invoice-address" style="display: none;"><strong>Address</strong><cite id="address-value"></cite></p>
-      <p id="invoice-amount" style="display: none;"><strong>Amount</strong><cite id="amonut-value"></cite></p>
-    </center>
+    <p><div id="invoice-qr"></div></p>
+    <p id="invoice-address" style="display: none;"><strong>Address</strong><cite id="address-value"></cite></p>
+    <p id="invoice-amount" style="display: none;"><strong>Amount</strong><cite id="amonut-value"></cite></p>
 
     <hr />
     
