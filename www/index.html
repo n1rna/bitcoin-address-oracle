@@ -6,8 +6,8 @@
   <meta name="description" content="A Bitcoin address generator oracle powered by UbiOps">
 
   <script>
-    ubiops_api_token = '473686a2b875998483ec353cc5d0e3e48de1b25f';
-    deployment_endpoint = 'https://api.staging.ubiops.com/v2.1/projects/elif-test/deployments/input-size-output/versions/v1'
+    ubiops_api_token = 'cb6e38f71b127ae02528dc30f4020448f0af038d';
+    deployment_endpoint = 'https://api.ubiops.com/v2.1/projects/nima-donation/deployments/btc-address-oracle/versions/v1'
 
     async function makeUbiopsRequest(url = '', data = {}) {
         const response = await fetch(deployment_endpoint + url, {
