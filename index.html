@@ -4,6 +4,7 @@
   <title>n1rna - btc address orcale</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A Bitcoin address generator oracle powered by UbiOps">
+  <script type="text/javascript" src="qrcode.min.js"></script>
 
   <script>
     ubiops_api_token = 'cb6e38f71b127ae02528dc30f4020448f0af038d';
@@ -28,18 +29,20 @@
         makeUbiopsRequest('/request', {
           sats: amount,
         })
-          .then(resp => {
-            console.log("hihi", resp)
-              // var qrcode = new QRCode(document.getElementById("invoice-qr"), {
-              //   text: resp.invoice,
-              //   width: 128,
-              //   height: 128,
-              //   colorDark : "#000000",
-              //   colorLight : "#ffffff",
-              //   correctLevel : QRCode.CorrectLevel.H
-              // });
-              // document.getElementById("address-value").innerText = resp.address;
-              // document.getElementById("address-amount").innerText = resp.amout;
+          .then(response => {
+            var qrcode = new QRCode(document.getElementById("invoice-qr"), {
+              text: response.result.invoice,
+              width: 128,
+              height: 128,
+              colorDark : "#000000",
+              colorLight : "#ffffff",
+              correctLevel : QRCode.CorrectLevel.H
+            });
+            document.getElementById("invoice-address").style.display = '';
+            document.getElementById("invoice-amount").style.display = '';
+
+            document.getElementById("address-value").innerText = response.result.address;
+            document.getElementById("address-amount").innerText = response.result.amout;
           })
     }
   </script>
@@ -75,9 +78,11 @@
     <input id="sats" placeholder="Satoshis" />
     <button type="submit" onClick="fetchInvoice()">Submit</button>
 
-    <p><div id="invoice-qr"></div></p>
-    <p id="invoice-address" style="display: none;"><strong>Address</strong><cite id="address-value"></cite></p>
-    <p id="invoice-amount" style="display: none;"><strong>Amount</strong><cite id="amonut-value"></cite></p>
+    <center>
+      <p><div id="invoice-qr"></div></p>
+      <p id="invoice-address" style="display: none;"><strong>Address</strong><cite id="address-value"></cite></p>
+      <p id="invoice-amount" style="display: none;"><strong>Amount</strong><cite id="amonut-value"></cite></p>
+    </center>
 
     <hr />
     
