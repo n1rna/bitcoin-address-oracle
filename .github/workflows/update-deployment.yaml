@@ -18,6 +18,7 @@ jobs:
           DEPLOYMENT_NAME: ${{ secrets.DEPLOYMENT_NAME }}
           DEPLOYMENT_VERSION: ${{ secrets.DEPLOYMENT_VERSION }}
         run: |
+          set +e
           update_deployment () {
             echo "Bundling the code in $DEPLOYMENT_DIRECTORY"
             zip -r deployment.zip $DEPLOYMENT_DIRECTORY &&
@@ -25,8 +26,8 @@ jobs:
             ubiops signin --token -p "$UBIOPS_API_TOKEN"
             ubiops version_revisions upload -z deployment.zip -d $DEPLOYMENT_NAME -v $DEPLOYMENT_VERSION
           }
-          changes=$(git diff --name-only --diff-filter=ADMR @~..@ | grep -c $DEPLOYMENT_DIRECTORY)
-          if [[ ! -z "$changes" && $changes -ge 1 ]]; then
+          git diff --name-only --diff-filter=ADMR @~..@ $DEPLOYMENT_DIRECTORY
+          if [ $? -eq 0 ]; then
             update_deployment
             echo "Detected changes in deployment ..."
           fi
