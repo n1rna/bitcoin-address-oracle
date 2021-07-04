@@ -26,8 +26,8 @@ jobs:
             ubiops signin --token -p "$UBIOPS_API_TOKEN"
             ubiops version_revisions upload -z deployment.zip -d $DEPLOYMENT_NAME -v $DEPLOYMENT_VERSION
           }
-          git diff --name-only --diff-filter=ADMR @~..@ $DEPLOYMENT_DIRECTORY
-          if [ $? -eq 0 ]; then
+          changes=$(git diff --name-only --diff-filter=ADMR @~..@ | grep $DEPLOYMENT_DIRECTORY | wc -l)
+          if [ $changes -ge 1 ]; then
             update_deployment
             echo "Detected changes in deployment ..."
           fi
