@@ -26,10 +26,15 @@
     }
     function fetchInvoice() {
         var amount = document.getElementById("sats").value;
+        document.getElementById("invoice-qr").innerHTML = 'Please wait ...'
         makeUbiopsRequest('/request', {
           sats: amount,
         })
           .then(response => {
+            // clean up previous content
+            document.getElementById("invoice-qr").innerHTML = '';
+            
+            // initialize new qr code
             var qrcode = new QRCode(document.getElementById("invoice-qr"), {
               text: response.result.invoice,
               width: 128,
@@ -94,16 +99,24 @@
     <hr />
     <h5>The Bitcoin Address Oracle Experiment</h5>
 
-<p>This tool lets you generate new bitcoin addresses based on the HD-Wallet (<a href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki">BIP-32</a>) scheme to improve your privacy when accepting Bitcoin payments - whether for donations or selling any products in exchange for Bitcoin. 
-We will generate a new address upon every new request, regardless of the fact that there are any funds moved to the previous address or not. Because one might ask for a new address and keep monitoring that address for any incoming transactions and that way they will be able to find the transaction associated with one of the donations.</p>
+<h2>Introduction</h2>
+<p>To protect your privacy, you should use a new Bitcoin address each time you receive a new payment. Additionally, you can use multiple wallets for different purposes.
+Doing so allows you to isolate each of your transactions in such a way that it is not possible to associate them all together. People who send you money cannot see what other Bitcoin addresses you own and what you do with them. This is probably the most important advice you should keep in mind.<br>
+Unless your intention is to receive public donations or payments with full transparency, publishing a Bitcoin address on any public space such as
+a website or social network is not a good idea when it comes to privacy. If you choose to do so, always remember that if you move any funds with this address to one of your other addresses, they will be publicly tainted by the history of your public address. Additionally, you might also want to be careful not to publish information about your transactions and purchases
+that could allow someone to identify your Bitcoin addresses.</p>
+<p>Source: <a href="https://bitcoin.org/en/protect-your-privacy">https://bitcoin.org/en/protect-your-privacy</a></p>
+<h2>Bitcoin Address Oracle</h2>
+<p>This tool lets you generate new bitcoin addresses based on the HD-Wallet (<a href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki">BIP-32</a>) scheme to improve your privacy when accepting Bitcoin payments - whether for donations or selling any products in exchange for Bitcoin.<br>
+  We will generate a new address upon every new request, regardless of the fact that there are any funds moved to the previous address or not. Because one might ask for a new address and keep monitoring that address for any incoming transactions and that way they will be able to find the transaction associated with each of the donations.</p>
 <p>Based on the <a href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#public-parent-key--public-child-key">&quot;Public parent key → public child key&quot;</a> scheme, you don&#39;t actually need the Private Key to derive new child addresses. Only thing you need, is a non-hardened extended public key to derive new child public keys and eventually new addresses.</p>
 <p>In the current implementation, the tool will iterate a specific range of valid derivation paths. You can configure the beginning of this range in the tool, therefore no bad actors will be able to iterate the whole derivation path to find your addresses - becuase they won&#39;t know where to start the iteration.</p>
 <h2 id="where-to-host-the-code-">Where to host the code?</h2>
 <p>Well, since this is not a static-page, and you would still need to hide some secret information, the tool cannot run as a simple Javascript snippet on the visitor&#39;s browser and you will always need another machine to run your code to generate a new address. Following information should always be kept secret and not exposed to the visitors:</p>
 <ul>
 <li>Your Extended Public Key</li>
-<li>First Derivation path</li>
-<li>Current iteration of derivation paths</li>
+<li>Beginning of Derivation Path</li>
+<li>Current iteration step of derivation paths</li>
 </ul>
 <p>Now, of course you have many options to host this little python script. Your Raspberry Pi sitting in the corner of your room? Yup! that&#39;s the best option to be honest! You can run it on whatever server you are comfortable with! But you can also use <a href="https://ubiops.com">UbiOps</a> to host your code which is more cost-efficient! UbiOps deployments are very similar to <a href="https://aws.amazon.com/lambda/">AWS Lambda</a> or <a href="https://cloud.google.com/functions">Google Cloud Functions</a> in their nature. You can run your deployments on-demand and they will shutdown if there are no incoming requests, to save money!</p>
 <p>If you take a look at the <a href="https://ubiops.com/docs/">UbiOps documentations</a> you can see that there are more features than just on-demand serverless computation available for you. </p>
@@ -121,7 +134,7 @@ We will generate a new address upon every new request, regardless of the fact th
 <li>Load a watch-only wallet using the public key</li>
 <li>Generate new addresses based on a derivation path</li>
 </ul>
-<p>For the purpose of this project, we are going to create a new private/public key pair and use the generate public key. But as mentioned before, you can indeed use your own public key if you already have one.</p>
+<p>For the purpose of this project, we are going to create a new private/public key pair and use that to generate public key. But as mentioned before, you can indeed use your own public key if you already have one.</p>
 <p>Run the following snippet somewhere safe and make sure you store your seed phrase (Mnemonic) securely. If you lose this, you will not be able to access your funds ever - Also anyone else who possesses this key will be able to access your funds without your permission.</p>
 <pre><code class="lang-python"><span class="hljs-keyword">from</span> bitcoinlib.mnemonic <span class="hljs-keyword">import</span> Mnemonic
 
@@ -171,7 +184,7 @@ wallet = Wallet.create(<span class="hljs-string">"Wallet"</span>, keys=passphras
         }
 </code></pre>
 <p>As you can see, we are reading the <code>HDKEY_XPUB_WIF</code> from the deployment&#39;s environment variables. You can find the docs on the environment variables functionality <a href="https://ubiops.com/docs/environment-variables.html">here</a>. This is where you will store your xpub that you generated in the previous step.</p>
-<p>The interesting part is the <code>_get_address_for_path</code> method. As you can see, currently we are passing the <code>last_used_path_index</code> to that method which will give us the corresponding _p2sh<em>segwit</em> address to that path. But right now, we are not iterating that path at all. So no matter how many times this deployment is called, it will return the same address. There is a catch here, we need to somehow store the <em>last used path</em> as a global variable and increment it after every request. Even if the deployment goes down due to inactivity, we would need the deployment to start with the updated <em>last used path</em> in memory. </p>
+<p>The interesting part is the <code>_get_address_for_path</code> method. As you can see, currently we are passing the <code>last_used_path_index</code> to that method which will give us the corresponding <em>p2sh_segwit</em> address to that path. But right now, we are not iterating that path at all. So no matter how many times this deployment is called, it will return the same address. There is a catch here, we need to somehow store the <em>last used path</em> as a global variable and increment it after every request. Even if the deployment goes down due to inactivity, we would need the deployment to start with the updated <em>last used path</em> in memory. </p>
 <p>Currently, UbiOps does not provide any kind of permanent storage to store these kinds of variables. But don&#39;t worry at all! We still have the good old Environment Variables for this purpose. We can update the environment variables inside the deployment itself and since these values are permanently stored on UbiOps database, we can somehow abuse (shush!!!) them to our benefit.</p>
 <pre><code class="lang-python">import os
 
@@ -257,7 +270,7 @@ import ubiops
 <p>WOW, wait a minute! What happened?</p>
 <p>So, I just added some logic to read the <code>last_used_path_index</code> environment variable from UbiOps API directly instead of relying on the value passed in the deployment context. And also added the <code>_update_lsat_used_path</code> method to update the this environment variable&#39;s value after every request. Nothing special :joy:</p>
 <p>The interesting part here is how I&#39;m using UbiOps&#39; client library inside the UbiOps deployment and you can see how you can use the internal API url to improve the performance and avoid public dns resolves, since the deployment will always run inside UbiOps cluster and therefore it&#39;s only natural to use the internal API url.</p>
-<p>Also not that we would need to define the <code>UBIOPS_API_TOKEN</code> environment variable and use a Service User Token with sufficient permissions and roles to be able to retrieve/update environment variables, like we do here. Check out the documentation on permissions and service users <a href="https://ubiops.com/docs/organizations/service-users.html">here</a>.</p>
+<p>Also note that we would need to define the <code>UBIOPS_API_TOKEN</code> environment variable and use a Service User Token with sufficient permissions and roles to be able to retrieve/update environment variables, like we do here. Check out the documentation on permissions and service users <a href="https://ubiops.com/docs/organizations/service-users.html">here</a>.</p>
 <p>Okay, we are almost done! Just one little thing to add to our deployment. The good old invoice url. Many wallets support this invoice format and we can actually create a nice QR code from this invoice url and show to our visitors.</p>
 <p>We will ask our users to indicate how many <code>satoshis</code> they want to donate, so we can create a nice invoice for them and they can pay the invoice just by scanning the QRC code.</p>
 <pre><code class="lang-python"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Deployment</span>:</span>
