@@ -124,7 +124,7 @@ that could allow someone to identify your Bitcoin addresses.</p>
 <p>This tool lets you generate new bitcoin addresses based on the HD-Wallet (<a href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki">BIP-32</a>) scheme to improve your privacy when accepting Bitcoin payments - whether for donations or selling any products in exchange for Bitcoin.<br>
   We will generate a new address upon every new request, regardless of the fact that there are any funds moved to the previous address or not. Because one might ask for a new address and keep monitoring that address for any incoming transactions and that way they will be able to find the transaction associated with each of the donations.</p>
 <p>Based on the <a href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#public-parent-key--public-child-key">&quot;Public parent key → public child key&quot;</a> scheme, you don&#39;t actually need the Private Key to derive new child addresses. Only thing you need, is a non-hardened extended public key to derive new child public keys and eventually new addresses.</p>
-<p>In the current implementation, the tool will iterate a specific range of valid derivation paths. You can configure the beginning of this range in the tool, therefore no bad actors will be able to iterate the whole derivation path to find your addresses - becuase they won&#39;t know where to start the iteration.</p>
+<p>In the current implementation, the tool will iterate a specific range of valid derivation paths. You can configure the beginning of this range in the tool, therefore no bad actors will be able to iterate the whole derivation path to find your addresses - because they won&#39;t know where to start the iteration.</p>
 <h2 id="where-to-host-the-code-">Where to host the code?</h2>
 <p>Well, since this is not a static-page, and you would still need to hide some secret information, the tool cannot run as a simple Javascript snippet on the visitor&#39;s browser and you will always need another machine to run your code to generate a new address. Following information should always be kept secret and not exposed to the visitors:</p>
 <ul>
@@ -136,7 +136,7 @@ that could allow someone to identify your Bitcoin addresses.</p>
 <p>If you take a look at the <a href="https://ubiops.com/docs/">UbiOps documentations</a> you can see that there are more features than just on-demand serverless computation available for you. </p>
 <p>In other words, you can consider UbiOps as:</p>
 <blockquote>
-<p>&quot;Lambda funcitons, on steroids!&quot; — Ricardo</p>
+<p>&quot;Lambda functions, on steroids!&quot; — Ricardo</p>
 </blockquote>
 <p>Also UbiOps has a nice free-tier where you get 100 Gigabyte Hours free computation time every month, which should be enough for a simple deployment like ours. So, let&#39;s dive into our implementation of this tool and deploying it on UbiOps using a free-tier account.</p>
 <h2 id="getting-hands-on">Getting Hands-on</h2>
